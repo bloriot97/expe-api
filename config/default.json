@@ -1,0 +1,11 @@
+{
+  "jwt": {
+    "expiresInSeconds" : 3600,
+    "secret" : "xaax073x89xc0xfb6h3e<xf1xe1Lx05xf0xdbHxebjx1cxa55"
+  },
+  "query": {
+    "limit": 10,
+    "max_limit": 50
+  },
+  "mongodb": "mongodb+srv://admin:admin@cluster0-p0csn.mongodb.net/expe?retryWrites=true"
+}
