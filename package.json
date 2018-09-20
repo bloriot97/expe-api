@@ -4,7 +4,9 @@
   "description": "Api for expe, keep track of your cs experiments.",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node app.js",
+    "start-dev": "NODE_ENV=dev nodemon app.js",
+    "test": "mocha --timeout 10000 --exit"
   },
   "author": "bloriot97@gmail.com",
   "license": "ISC",
