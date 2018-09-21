@@ -8,6 +8,17 @@ const schemas = {
     creditential: { type: String, default: 'user' },
     email: String,
   },
+  experiment: {
+    name: { type: String, required: true },
+    user: { type: Object, required: true },
+    results: { type: Object },
+    started_at: {
+      type: Date,
+      default: Date.now,
+    },
+    finished_at: Date,
+    status: String,
+  },
 };
 
 module.exports = schemas;
