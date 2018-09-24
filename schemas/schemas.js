@@ -10,8 +10,11 @@ const schemas = {
   },
   experiment: {
     name: { type: String, required: true },
-    user: { type: Object, required: true },
-    results: { type: Object },
+    user: {
+      username: String,
+      email: String,
+    },
+    results: { type: Object, default: {} },
     started_at: {
       type: Date,
       default: Date.now,

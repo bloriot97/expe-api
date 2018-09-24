@@ -94,6 +94,77 @@ describe('Experiment 🔬', () => {
           });
       });
     });
+    describe('/PUT & /PATCH', () => {
+      it('should PUT the results to the experiment', (done) => {
+        const experiment = new Experiment(
+          {
+            name: 'expe',
+            user: {
+              username: connectedUser.username,
+              email: connectedUser.email,
+            },
+          },
+        );
+        experiment.save((expErr, expRes) => {
+          const results = {
+            res1: 'some results',
+            res2: {
+              thing1: 2,
+              thing2: '//',
+            },
+          };
+          chai.request(server)
+            .put(`/api/v1/experiments/${expRes.id}/results`)
+            .send(results)
+            .set('authorization', `Bearer ${token}`)
+            .end((err, res) => {
+              res.should.have.status(200);
+              res.body.should.be.a('object');
+              res.body.message.should.eql('Experiment updated!');
+              res.body.data.results.should.be.a('object');
+              res.body.data.results.should.have.property('res1');
+              res.body.data.results.should.have.property('res2');
+              done();
+            });
+        });
+      });
+      it('should PATCH (add) one or many result to the experiment', (done) => {
+        const experiment = new Experiment(
+          {
+            name: 'expe',
+            user: {
+              username: connectedUser.username,
+              email: connectedUser.email,
+            },
+            results: {
+              res1: 'some results',
+            },
+          },
+        );
+        experiment.save((expErr, expRes) => {
+          const results = {
+            res2: {
+              thing2: 'new',
+            },
+          };
+          chai.request(server)
+            .patch(`/api/v1/experiments/${expRes.id}/results`)
+            .send(results)
+            .set('authorization', `Bearer ${token}`)
+            .end((err, res) => {
+              res.should.have.status(200);
+              res.body.should.be.a('object');
+              res.body.message.should.eql('Experiment updated!');
+              res.body.data.results.should.be.a('object');
+              res.body.data.results.should.have.property('res1');
+              res.body.data.results.should.have.property('res2');
+              res.body.data.results.res2.should.have.property('thing2');
+              res.body.data.results.res2.thing2.should.eql('new');
+              done();
+            });
+        });
+      });
+    });
   });
 
   describe('Admin', () => {
