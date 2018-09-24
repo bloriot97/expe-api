@@ -9,6 +9,17 @@ exports.create = (req, res) => {
   req.body.user = {};
   req.body.user.username = req.user.username;
   req.body.user.email = req.user.email;
+
+  req.body.parameters = ((param) => {
+    const parameters = {};
+    Object.keys(param).forEach((key) => {
+      parameters[key] = {
+        value: param[key],
+      };
+    });
+    return parameters;
+  })(req.body.parameters);
+
   const experiment = new Experiment(req.body);
 
   experiment.save()
@@ -42,6 +53,48 @@ exports.find = (req, res) => {
     }).catch((err) => {
       res.status(400).send({
         message: err.message || 'Some error occurred while retrieving the experiments.',
+      });
+    });
+};
+
+exports.findAndLockParameter = (req, res) => {
+  if (!req.body) {
+    res.status(400).send({
+      message: 'There is no content',
+    });
+  }
+
+  const path = `parameters.${req.params.paramName}`;
+  const query = {};
+  query[`${path}.locked`] = true;
+
+  Experiment.findOne(
+    { _id: req.params.expId },
+  )
+    .then((experiment) => {
+      if (experiment.parameters.has(req.params.paramName)) {
+        Experiment.findOneAndUpdate({ _id: req.params.expId }, { $set: query }, { new: true })
+          .then((experimentUpdated) => {
+            res.send(experimentUpdated.parameters.get(req.params.paramName));
+          })
+          .catch((err) => {
+            res.status(500).send({
+              message: err,
+            });
+          });
+      } else {
+        res.status(404).send({
+          message: `The experiment ${req.params.expId} has no field named : ${req.params.paramName}`,
+        });
+      }
+    }).catch((err) => {
+      if (err.kind === 'ObjectId') {
+        res.status(404).send({
+          message: `Experiment not found with id ${req.params.expId}`,
+        });
+      }
+      res.status(500).send({
+        message: `Experiment updating user with id ${req.params.expId}`,
       });
     });
 };

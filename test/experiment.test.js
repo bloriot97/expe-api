@@ -73,14 +73,63 @@ describe('Experiment 🔬', () => {
             });
         });
       });
+      it('should GET the parameter and lock it', (done) => {
+        const param = 1;
+        const exp = new Experiment({
+          name: 'exp',
+          parameters: {
+            param: {
+              value: param,
+            },
+          },
+        });
+        exp.save((expErr, expRes) => {
+          chai.request(server)
+            .get(`/api/v1/experiments/${expRes.id}/parameters/param`)
+            .set('authorization', `Bearer ${token}`)
+            .end((err, res) => {
+              res.should.have.status(200);
+              res.body.should.be.a('object');
+              res.body.value.should.eql(param);
+              res.body.locked.should.eql(true);
+              done();
+            });
+        });
+      });
+      it('should not GET a parameter that does not exist', (done) => {
+        const exp = new Experiment({
+          name: 'exp',
+          parameters: {
+          },
+        });
+        exp.save((expErr, expRes) => {
+          chai.request(server)
+            .get(`/api/v1/experiments/${expRes.id}/parameters/param`)
+            .set('authorization', `Bearer ${token}`)
+            .end((err, res) => {
+              res.should.have.status(404);
+              res.body.should.be.a('object');
+              done();
+            });
+        });
+      });
     });
 
     describe('/POST experiments', () => {
       it('should POST an experiment', (done) => {
-        const name = 'exp';
+        const exp = {
+          name: 'exp',
+          parameters: {
+            param1: 1,
+            param2: {
+              nested1: 'nestd',
+              nested2: [1, 2],
+            },
+          },
+        };
         chai.request(server)
           .post('/api/v1/experiments')
-          .send({ name })
+          .send(exp)
           .set('authorization', `Bearer ${token}`)
           .end((err, res) => {
             res.should.have.status(200);
@@ -89,7 +138,8 @@ describe('Experiment 🔬', () => {
             res.body.data.user.username.should.eql(connectedUser.username);
             // eslint-disable-next-line dot-notation
             res.body.data['_id'].should.be.a('string');
-            res.body.data.name.should.eql(name);
+            res.body.data.name.should.eql(exp.name);
+            res.body.data.parameters.param2.value.nested2.should.eql(exp.parameters.param2.nested2);
             done();
           });
       });

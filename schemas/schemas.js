@@ -1,5 +1,11 @@
-// const mongoose = require('mongoose');
-// const Schema = mongoose.Schema;
+const mongoose = require('mongoose');
+
+const { Schema } = mongoose;
+
+const Parameter = new Schema({
+  value: Object,
+  locked: { type: Boolean, default: false },
+});
 
 const schemas = {
   user: {
@@ -15,6 +21,10 @@ const schemas = {
       email: String,
     },
     results: { type: Object, default: {} },
+    parameters: {
+      type: Map,
+      of: Parameter,
+    },
     started_at: {
       type: Date,
       default: Date.now,
