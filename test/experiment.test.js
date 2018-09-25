@@ -166,6 +166,57 @@ describe('Experiment 🔬', () => {
       });
     });
     describe('/PUT & /PATCH', () => {
+      it('should PUT the parameter', (done) => {
+        const param = 1;
+        const exp = new Experiment({
+          name: 'exp',
+          parameters: {
+            param: {
+              value: param,
+            },
+          },
+        });
+        const value = 'something';
+        exp.save((expErr, expRes) => {
+          chai.request(server)
+            .put(`/api/v1/experiments/${expRes.id}/parameters/param`)
+            .send({ value })
+            .set('authorization', `Bearer ${token}`)
+            .end((err, res) => {
+              res.should.have.status(200);
+              res.body.should.be.a('object');
+              res.body.data.value.should.eql(value);
+              res.body.data.locked.should.eql(false);
+              done();
+            });
+        });
+      });
+      it('should not PUT the parameter if it is locked', (done) => {
+        const param = 1;
+        const exp = new Experiment({
+          name: 'exp',
+          parameters: {
+            param: {
+              value: param,
+              locked: true,
+            },
+          },
+        });
+        const value = 'something';
+        exp.save((expErr, expRes) => {
+          chai.request(server)
+            .put(`/api/v1/experiments/${expRes.id}/parameters/param`)
+            .send({ value })
+            .set('authorization', `Bearer ${token}`)
+            .end((err, res) => {
+              res.should.have.status(404);
+              res.body.should.be.a('object');
+              res.body.data.value.should.eql(param);
+              res.body.data.locked.should.eql(true);
+              done();
+            });
+        });
+      });
       it('should PUT the results to the experiment', (done) => {
         const experiment = new Experiment(
           {

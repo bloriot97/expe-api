@@ -143,6 +143,55 @@ exports.putResults = (req, res) => {
     });
 };
 
+exports.updateParamIfNotLocked = (req, res) => {
+  if (!req.body) {
+    res.status(400).send({
+      message: 'There is no content',
+    });
+  }
+
+  const path = `parameters.${req.params.paramName}`;
+  const query = {};
+  query[`${path}.value`] = req.body.value;
+
+  Experiment.findOne(
+    { _id: req.params.expId },
+  )
+    .then((experiment) => {
+      if (experiment.parameters.has(req.params.paramName)) {
+        if (experiment.parameters.get(req.params.paramName).locked) {
+          res.status(404).send({
+            message: `The parameter ${req.params.paramName} of experiment ${req.params.expId} is locked`,
+            data: experiment.parameters.get(req.params.paramName),
+          });
+        } else {
+          Experiment.findOneAndUpdate({ _id: req.params.expId }, { $set: query }, { new: true })
+            .then((experimentUpdated) => {
+              res.send({ message: 'Param updated', data: experimentUpdated.parameters.get(req.params.paramName) });
+            })
+            .catch((err) => {
+              res.status(500).send({
+                message: err,
+              });
+            });
+        }
+      } else {
+        res.status(404).send({
+          message: `The experiment ${req.params.expId} has no field named : ${req.params.paramName}`,
+        });
+      }
+    }).catch((err) => {
+      if (err.kind === 'ObjectId') {
+        res.status(404).send({
+          message: `Experiment not found with id ${req.params.expId}`,
+        });
+      }
+      res.status(500).send({
+        message: `Experiment updating user with id ${req.params.expId}`,
+      });
+    });
+};
+
 exports.patchResults = (req, res) => {
   if (!req.body) {
     res.status(400).send({

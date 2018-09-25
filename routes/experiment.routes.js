@@ -8,5 +8,6 @@ module.exports = (router) => {
   router.post('/experiments', Experiment.create);
   router.post('/experiments/:expId/finish', Experiment.concludeAndUpdateStatus);
   router.put('/experiments/:expId/results', Experiment.putResults);
+  router.put('/experiments/:expId/parameters/:paramName', Experiment.updateParamIfNotLocked);
   router.patch('/experiments/:expId/results', Experiment.patchResults);
 };
