@@ -30,7 +30,7 @@ const schemas = {
       default: Date.now,
     },
     finished_at: Date,
-    status: String,
+    status: { type: String, defalut: 'processing' },
   },
 };
 

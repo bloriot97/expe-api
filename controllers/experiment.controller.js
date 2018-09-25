@@ -57,6 +57,23 @@ exports.find = (req, res) => {
     });
 };
 
+exports.concludeAndUpdateStatus = (req, res) => {
+  const { status } = req.body;
+  Experiment.findByIdAndUpdate(req.params.expId, { status, finished_at: new Date() }, { new: true })
+    .then((experiment) => {
+      if (!experiment) {
+        res.status(404).send({
+          message: `Experiment not found with id ${req.params.expId}`,
+        });
+      }
+      res.send({ message: `Experiment finished with status ${status}`, data: experiment });
+    }).catch((err) => {
+      res.status(400).send({
+        message: err.message || 'Some error occurred while retrieving the experiments.',
+      });
+    });
+};
+
 exports.findAndLockParameter = (req, res) => {
   if (!req.body) {
     res.status(400).send({

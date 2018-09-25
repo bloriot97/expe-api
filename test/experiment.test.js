@@ -143,6 +143,27 @@ describe('Experiment 🔬', () => {
             done();
           });
       });
+      it('should POST the final status and finish the experiment', (done) => {
+        const exp = new Experiment({
+          name: 'exp',
+          parameters: {
+          },
+        });
+        const status = 'sucess';
+        exp.save((expErr, expRes) => {
+          chai.request(server)
+            .post(`/api/v1/experiments/${expRes.id}/finish`)
+            .send({ status })
+            .set('authorization', `Bearer ${token}`)
+            .end((err, res) => {
+              res.should.have.status(200);
+              res.body.should.be.a('object');
+              res.body.data.should.have.property('finished_at');
+              res.body.data.status.should.eql(status);
+              done();
+            });
+        });
+      });
     });
     describe('/PUT & /PATCH', () => {
       it('should PUT the results to the experiment', (done) => {
